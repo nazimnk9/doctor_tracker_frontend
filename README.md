@@ -121,40 +121,60 @@ graph TD
 
 ## Visual Evidence
 
-### Desktop Views
+### 1. Desktop Views (1440px)
 
-#### 1. Login View
+#### Login Screen
 *Clean glassmorphism authentication card.*
 ![Login Desktop](./screenshots/login_desktop.png)
 
-#### 2. Administrative Dashboard
-*Analytical metrics, patient admissions trend chart, and doctor specialization loads.*
+#### Administrative Dashboard
+*Analytical metrics summary cards, active Recharts area trend chart, and specialization load bar charts.*
 ![Dashboard Desktop](./screenshots/dashboard_desktop.png)
 
-#### 3. Doctor Management Page
-*List of doctors, text search, specialized dropdown filtering, and an interactive patients split-view drawer.*
+#### Doctor Directory (Split View)
+*Split-screen layout displaying the doctor listing on the left, and the detailed profile pane on the right.*
 ![Doctors Desktop](./screenshots/doctors_desktop.png)
 
-#### 4. Patient Catalog Page
-*Dedicated patient table, medical condition search, filters, pagination, and edit/delete actions.*
+#### Patient Catalog Directory
+*Tabular display of patient registry supporting pagination, text filters, and quick action modulators.*
 ![Patients Desktop](./screenshots/patients_desktop.png)
 
 ---
 
-### Mobile Views
+### 2. Laptop View (1100px)
 
-#### 1. Dashboard View (Mobile)
-*Reflowed layout stacking metric cards and vertical charting.*
+#### Doctor Directory (Slide Drawer Overlay)
+*Laptop-optimized layout displaying the doctor details as an overlay side drawer that slides in from the right edge.*
+![Doctors Laptop](./screenshots/doctors_laptop.png)
+
+---
+
+### 3. Tablet Views (768px)
+
+#### Patient Directory (Tablet Card Layout)
+*Tablet-optimized list converting data rows into standalone summary cards.*
+![Patients Tablet](./screenshots/patients_tablet.png)
+
+#### Doctor Details (Tablet Block View)
+*Tablet-optimized full-screen doctor details view which completely replaces the list layout when active.*
+![Doctors Tablet](./screenshots/doctors_tablet.png)
+
+---
+
+### 4. Mobile Views (375px)
+
+#### Navigation Drawer & Dashboard Metrics
+*Dashboard metrics layout reflowed vertically with hamburger-triggered navigation drawer.*
 ![Dashboard Mobile](./screenshots/dashboard_mobile.png)
 
-#### 2. Doctors Directory - List View (Mobile)
-*Mobile-responsive list displaying doctor profiles as compact, clean cards.*
+#### Doctor Directory - List Cards (Mobile)
+*Doctor listing styled as independent cards containing specialized stats.*
 ![Doctors Mobile](./screenshots/doctors_mobile.png)
 
-#### 3. Doctors Directory - Details View (Mobile)
-*Full screen details layout showing contact card and patient loader after row selection.*
+#### Doctor Directory - Details Screen (Mobile)
+*Details view replacing the list on mobile when a row is active, containing full patient loaders.*
 ![Doctors Mobile Details](./screenshots/doctors_mobile_detail.png)
 
-#### 4. Patients Directory (Mobile)
-*Optimized card-list view containing full patient metadata and edit/delete modal controls.*
+#### Patient Directory - Card Registry (Mobile)
+*Patients directory transforming tables to card rows containing inline contact icons and actions.*
 ![Patients Mobile](./screenshots/patients_mobile.png)
