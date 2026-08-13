@@ -1313,3 +1313,127 @@ select.filter-control {
 .flex-1 {
   flex: 1;
 }
+
+/* ==========================================================================
+   Responsive & Device Compatibility Enhancements (Desktop, Laptop, Tablet, Mobile)
+   ========================================================================== */
+
+/* 1. Laptop/Small Desktop Adjustments */
+@media (max-width: 1200px) {
+  .split-view-container {
+    display: block;
+    position: relative;
+  }
+  
+  .detail-panel {
+    position: fixed !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 420px;
+    max-width: 100%;
+    background-color: #111827; /* Solid dark theme background to prevent transparency overlap */
+    border-left: 1px solid var(--border-color);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    animation: slideIn 0.28s ease-out forwards;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* 2. Tablet Views (max-width: 768px) */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.625rem;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .filter-row.second-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.875rem;
+  }
+  
+  .date-filter-group {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .date-control {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .clear-filters-btn {
+    align-self: flex-end;
+    margin-top: 0.25rem;
+  }
+  
+  /* Make table scrolling touch-friendly */
+  .table-container {
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* 3. Mobile Viewports (max-width: 480px) */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.75rem 1.25rem;
+  }
+  
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .detail-panel {
+    padding: 1.5rem 1rem;
+  }
+
+  .detail-header h2 {
+    font-size: 1.2rem;
+  }
+
+  /* Compact padding for main contents */
+  .main-content {
+    padding: 1rem;
+    padding-top: 4.5rem;
+  }
+
+  .glass-card {
+    padding: 1rem;
+  }
+  
+  .modal-overlay {
+    padding: 1rem 0.5rem;
+  }
+
+  .modal-header, .modal-body, .modal-footer {
+    padding: 1rem;
+  }
+}
