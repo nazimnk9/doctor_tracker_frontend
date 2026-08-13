@@ -74,8 +74,7 @@ export default function DashboardPage() {
         } else {
           setError('Failed to fetch dashboard metrics');
         }
-      } catch (err) {
-        console.error('Error fetching dashboard stats:', err);
+      } catch {
         setError('Connection error. Please try again later.');
       } finally {
         setLoading(false);

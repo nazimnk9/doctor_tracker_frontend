@@ -92,8 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: data.message || 'Login failed' };
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Server error occurred';
-      return { success: false, error: message };
+      const errorMessage = error instanceof Error ? error.message : 'Server error occurred';
+      return { success: false, error: errorMessage };
     }
   };
 

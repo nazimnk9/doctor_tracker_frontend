@@ -113,8 +113,7 @@ export default function PatientsPage() {
       } else {
         setError('Failed to load patients catalog');
       }
-    } catch (err) {
-      console.error('Error loading patients:', err);
+    } catch {
       setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
@@ -178,8 +177,7 @@ export default function PatientsPage() {
         const errData = await res.json();
         alert(errData.message || 'Failed to update patient profile');
       }
-    } catch (err) {
-      console.error('Error updating patient:', err);
+    } catch {
       alert('Error connecting to the server');
     }
   };
@@ -202,8 +200,7 @@ export default function PatientsPage() {
       } else {
         alert('Failed to delete patient record');
       }
-    } catch (err) {
-      console.error('Error deleting patient:', err);
+    } catch {
       alert('Error connecting to the server');
     }
   };

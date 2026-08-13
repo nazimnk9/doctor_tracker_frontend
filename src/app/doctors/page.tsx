@@ -127,8 +127,7 @@ export default function DoctorsPage() {
       } else {
         setError('Failed to fetch doctors list');
       }
-    } catch (err) {
-      console.error('Error fetching doctors:', err);
+    } catch {
       setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
@@ -200,8 +199,7 @@ export default function DoctorsPage() {
         const errData = await res.json();
         alert(errData.message || 'Failed to create doctor');
       }
-    } catch (err) {
-      console.error('Error adding doctor:', err);
+    } catch {
       alert('Error connecting to the server');
     }
   };
@@ -233,8 +231,7 @@ export default function DoctorsPage() {
         const errData = await res.json();
         alert(errData.message || 'Failed to add patient');
       }
-    } catch (err) {
-      console.error('Error adding patient:', err);
+    } catch {
       alert('Error connecting to the server');
     }
   };
@@ -257,8 +254,7 @@ export default function DoctorsPage() {
       } else {
         alert('Failed to remove patient');
       }
-    } catch (err) {
-      console.error('Error deleting patient:', err);
+    } catch {
       alert('Error connecting to the server');
     }
   };
