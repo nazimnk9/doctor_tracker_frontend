@@ -1,0 +1,761 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { Navbar } from '../../components/Navbar';
+import {
+  Search,
+  Calendar,
+  Phone,
+  Mail,
+  Trash2,
+  Edit2,
+  X,
+  HeartPulse,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+} from 'lucide-react';
+
+interface Doctor {
+  _id: string;
+  name: string;
+}
+
+interface Patient {
+  _id: string;
+  name: string;
+  age: number;
+  gender: string;
+  condition: string;
+  phone: string;
+  email?: string;
+  doctor: {
+    _id: string;
+    name: string;
+    specialization?: string;
+    hospital?: string;
+  };
+  dateAdded: string;
+}
+
+export default function PatientsPage() {
+  const { token, loading: authLoading } = useAuth();
+
+  // Patient listing states
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Search & Filter states
+  const [search, setSearch] = useState('');
+  const [condition, setCondition] = useState('');
+  const [gender, setGender] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  // Dropdown options loaded from API
+  const [filterOptions, setFilterOptions] = useState<{ conditions: string[]; doctors: Doctor[] }>({
+    conditions: [],
+    doctors: [],
+  });
+
+  // Edit Modal states
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    age: '',
+    gender: 'Male',
+    condition: '',
+    phone: '',
+    email: '',
+    doctor: '',
+  });
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+  // Fetch patients list
+  const fetchPatients = async (currentPage = page) => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '8',
+      });
+
+      if (search) params.append('search', search);
+      if (condition) params.append('condition', condition);
+      if (gender) params.append('gender', gender);
+      if (doctorId) params.append('doctorId', doctorId);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const res = await fetch(`${API_URL}/patients?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPatients(data.patients);
+        setTotalPages(data.pages);
+        setTotalPatients(data.total);
+        setFilterOptions({
+          conditions: data.filters.conditions || [],
+          doctors: data.filters.doctors || [],
+        });
+      } else {
+        setError('Failed to load patients catalog');
+      }
+    } catch (err) {
+      setError('Connection error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchPatients(1);
+      setPage(1);
+    }
+  }, [token, search, condition, gender, doctorId, startDate, endDate]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      fetchPatients(newPage);
+    }
+  };
+
+  // Open Edit Modal handler
+  const openEditModal = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setEditFormData({
+      name: patient.name,
+      age: patient.age.toString(),
+      gender: patient.gender,
+      condition: patient.condition,
+      phone: patient.phone,
+      email: patient.email || '',
+      doctor: patient.doctor?._id || '',
+    });
+    setShowEditModal(true);
+  };
+
+  // Save/Update patient details handler
+  const handleUpdatePatient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !selectedPatient) return;
+
+    try {
+      const payload = {
+        ...editFormData,
+        age: parseInt(editFormData.age),
+      };
+
+      const res = await fetch(`${API_URL}/patients/${selectedPatient._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setShowEditModal(false);
+        fetchPatients(page);
+      } else {
+        const errData = await res.json();
+        alert(errData.message || 'Failed to update patient profile');
+      }
+    } catch (err) {
+      alert('Error connecting to the server');
+    }
+  };
+
+  // Delete patient handler
+  const handleDeletePatient = async (id: string) => {
+    if (!token) return;
+    if (!confirm('Are you sure you want to permanently delete this patient record?')) return;
+
+    try {
+      const res = await fetch(`${API_URL}/patients/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        fetchPatients(page);
+      } else {
+        alert('Failed to delete patient record');
+      }
+    } catch (err) {
+      alert('Error connecting to the server');
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="app-container">
+        <Navbar />
+        <main className="main-content">
+          <div className="loading-container">
+            <div className="spinner"></div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-container">
+      <Navbar />
+      <main className="main-content">
+        <div className="page-header">
+          <div>
+            <h1>Patient Management</h1>
+            <p>Comprehensive register of patients, medical conditions, and re-assignment options.</p>
+          </div>
+        </div>
+
+        {/* Filters Panel */}
+        <div className="glass-card filter-panel">
+          <div className="filter-row">
+            <div className="filter-input-group search-group">
+              <Search className="filter-icon" size={18} />
+              <input
+                type="text"
+                placeholder="Search by name, condition..."
+                className="filter-control"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="filter-input-group">
+              <select
+                className="filter-control"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+              >
+                <option value="">All Conditions</option>
+                {filterOptions.conditions.map((cond) => (
+                  <option key={cond} value={cond}>
+                    {cond}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-input-group">
+              <select
+                className="filter-control"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <option value="">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div className="filter-input-group">
+              <select
+                className="filter-control"
+                value={doctorId}
+                onChange={(e) => setDoctorId(e.target.value)}
+              >
+                <option value="">All Doctors</option>
+                {filterOptions.doctors.map((doc) => (
+                  <option key={doc._id} value={doc._id}>
+                    {doc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="filter-row second-row">
+            <div className="date-filter-group">
+              <Calendar size={16} className="date-icon" />
+              <span>Admitted between:</span>
+              <input
+                type="date"
+                className="date-control"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <span>and</span>
+              <input
+                type="date"
+                className="date-control"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            {(search || condition || gender || doctorId || startDate || endDate) && (
+              <button
+                className="clear-filters-btn"
+                onClick={() => {
+                  setSearch('');
+                  setCondition('');
+                  setGender('');
+                  setDoctorId('');
+                  setStartDate('');
+                  setEndDate('');
+                }}
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Patients Table */}
+        {error && (
+          <div className="glass-card error-card">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="loading-container">
+            <div className="spinner"></div>
+          </div>
+        ) : (
+          <div className="glass-card table-wrapper-card">
+            <div className="table-container" style={{ margin: 0 }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient Name</th>
+                    <th>Age / Gender</th>
+                    <th>Condition</th>
+                    <th>Contact Info</th>
+                    <th>Assigned Doctor</th>
+                    <th>Admission Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patients.length > 0 ? (
+                    patients.map((pat) => (
+                      <tr key={pat._id}>
+                        <td style={{ fontWeight: 600 }}>{pat.name}</td>
+                        <td>
+                          {pat.age} yrs / <span className="text-muted">{pat.gender}</span>
+                        </td>
+                        <td>
+                          <span className="badge badge-info">{pat.condition}</span>
+                        </td>
+                        <td>
+                          <div className="contact-cell">
+                            <span className="contact-phone"><Phone size={12} /> {pat.phone}</span>
+                            {pat.email && (
+                              <span className="contact-email text-muted"><Mail size={12} /> {pat.email}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="doc-assigned-cell">
+                            <span className="doc-name">{pat.doctor?.name || 'Unassigned'}</span>
+                            {pat.doctor?.specialization && (
+                              <span className="doc-spec text-muted">{pat.doctor.specialization}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-muted">
+                          {new Date(pat.dateAdded).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <div className="actions-cell">
+                            <button
+                              className="action-btn edit-btn"
+                              onClick={() => openEditModal(pat)}
+                              title="Edit patient"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                            <button
+                              className="action-btn delete-btn"
+                              onClick={() => handleDeletePatient(pat._id)}
+                              title="Delete patient"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="no-data-cell">
+                        No patients matched your criteria.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <span className="pagination-count">
+                  Page {page} of {totalPages} ({totalPatients} patients total)
+                </span>
+                <div className="pagination-btn-group">
+                  <button
+                    className="btn btn-secondary btn-icon"
+                    disabled={page === 1}
+                    onClick={() => handlePageChange(page - 1)}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-icon"
+                    disabled={page === totalPages}
+                    onClick={() => handlePageChange(page + 1)}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modal: Edit Patient Info */}
+        {showEditModal && selectedPatient && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>Edit Patient Profile</h3>
+                <button className="close-panel-btn" onClick={() => setShowEditModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleUpdatePatient}>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label">Patient Name</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group flex-1">
+                      <label className="form-label">Age</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={editFormData.age}
+                        onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group flex-1">
+                      <label className="form-label">Gender</label>
+                      <select
+                        className="form-input"
+                        value={editFormData.gender}
+                        onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Medical Condition</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editFormData.condition}
+                      onChange={(e) => setEditFormData({ ...editFormData, condition: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group flex-1">
+                      <label className="form-label">Phone Number</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={editFormData.phone}
+                        onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group flex-1">
+                      <label className="form-label">Email Address</label>
+                      <input
+                        type="email"
+                        className="form-input"
+                        value={editFormData.email}
+                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Assigned Doctor</label>
+                    <select
+                      className="form-input"
+                      value={editFormData.doctor}
+                      onChange={(e) => setEditFormData({ ...editFormData, doctor: e.target.value })}
+                      required
+                    >
+                      {filterOptions.doctors.map((doc) => (
+                        <option key={doc._id} value={doc._id}>
+                          {doc.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <style jsx>{`
+        .page-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+          font-size: 1.875rem;
+          font-weight: 800;
+          color: #fff;
+          letter-spacing: -0.025em;
+        }
+
+        .page-header p {
+          color: var(--text-secondary);
+          font-size: 0.95rem;
+          margin-top: 0.25rem;
+        }
+
+        /* Filters Panel */
+        .filter-panel {
+          margin-bottom: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          padding: 1.25rem 1.5rem;
+        }
+
+        .filter-row {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .filter-row.second-row {
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid var(--border-color);
+          padding-top: 0.875rem;
+        }
+
+        .filter-input-group {
+          flex: 1;
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .search-group {
+          flex: 2;
+        }
+
+        .filter-icon {
+          position: absolute;
+          left: 1rem;
+          color: var(--text-muted);
+        }
+
+        .filter-control {
+          width: 100%;
+          padding: 0.625rem 0.875rem;
+          padding-left: 2.5rem;
+          background-color: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          color: var(--text-primary);
+          outline: none;
+          height: 38px;
+        }
+
+        select.filter-control {
+          padding-left: 0.875rem;
+          cursor: pointer;
+        }
+
+        .filter-control:focus {
+          border-color: var(--accent-primary);
+        }
+
+        .date-filter-group {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.825rem;
+          color: var(--text-secondary);
+        }
+
+        .date-icon {
+          color: var(--text-muted);
+        }
+
+        .date-control {
+          background-color: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          padding: 0.35rem 0.5rem;
+          border-radius: var(--radius-sm);
+          color: var(--text-primary);
+          outline: none;
+        }
+
+        .clear-filters-btn {
+          font-size: 0.825rem;
+          color: var(--accent-primary);
+          font-weight: 600;
+        }
+
+        .clear-filters-btn:hover {
+          color: var(--text-primary);
+          text-decoration: underline;
+        }
+
+        .table-wrapper-card {
+          padding: 1.5rem;
+        }
+
+        .contact-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          font-size: 0.8rem;
+        }
+
+        .contact-phone, .contact-email {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+
+        .doc-assigned-cell {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .doc-name {
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .doc-spec {
+          font-size: 0.725rem;
+        }
+
+        .actions-cell {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .action-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-sm);
+          transition: all var(--transition-fast);
+          border: 1px solid var(--border-color);
+        }
+
+        .edit-btn {
+          color: var(--text-secondary);
+          background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .edit-btn:hover {
+          color: #fff;
+          background-color: var(--accent-primary);
+          border-color: var(--accent-primary);
+        }
+
+        .delete-btn {
+          color: var(--text-muted);
+          background-color: rgba(239, 68, 68, 0.05);
+          border-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .delete-btn:hover {
+          color: #fff;
+          background-color: var(--accent-danger);
+          border-color: var(--accent-danger);
+        }
+
+        .no-data-cell {
+          text-align: center;
+          padding: 4rem !important;
+          color: var(--text-muted);
+        }
+
+        .btn-icon {
+          padding: 0.5rem;
+          width: 34px;
+          height: 34px;
+        }
+
+        .close-panel-btn {
+          color: var(--text-muted);
+          transition: color var(--transition-fast);
+        }
+
+        .close-panel-btn:hover {
+          color: #fff;
+        }
+
+        .flex-1 {
+          flex: 1;
+        }
+      `}</style>
+    </div>
+  );
+}
