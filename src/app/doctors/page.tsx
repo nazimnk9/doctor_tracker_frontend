@@ -366,7 +366,7 @@ export default function DoctorsPage() {
         </div>
 
         {/* Main Grid Split View */}
-        <div className="split-view-container">
+        <div className={`split-view-container ${selectedDoctor ? 'has-selected-doctor' : ''}`}>
           {/* Left Panel: Doctors Table */}
           <div className="list-panel">
             {error && (
