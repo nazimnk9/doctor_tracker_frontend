@@ -1352,8 +1352,8 @@ select.filter-control {
   }
 }
 
-/* 2. Tablet Views (max-width: 768px) */
-@media (max-width: 768px) {
+/* 2. Tablet & Smaller Device Views (max-width: 1024px) */
+@media (max-width: 1024px) {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1390,14 +1390,119 @@ select.filter-control {
   }
 
   .clear-filters-btn {
-    align-self: flex-end;
+    align-self: flex-start;
     margin-top: 0.25rem;
   }
   
-  /* Make table scrolling touch-friendly */
+  /* Make table scrolling touch-friendly and prevent column crushing */
   .table-container {
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--radius-sm);
+  }
+
+  .data-table {
+    min-width: 900px !important; /* Forces scrollbar to maintain tabular readability and button access */
+  }
+}
+
+/* Tablet & Mobile Table Card Transformation (max-width: 768px) */
+@media (max-width: 768px) {
+  .table-container {
+    border: none !important;
+    background: transparent !important;
+    margin-top: 1rem !important;
+  }
+
+  .data-table, 
+  .data-table thead, 
+  .data-table tbody, 
+  .data-table th, 
+  .data-table td, 
+  .data-table tr {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important; /* Overrides desktop/tablet min-width */
+  }
+
+  .data-table thead {
+    display: none !important; /* Hide column headers */
+  }
+
+  .data-table tr {
+    margin-bottom: 1.25rem !important;
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.25rem 1rem !important;
+    box-shadow: var(--shadow-md) !important;
+    transition: transform var(--transition-fast) !important;
+  }
+
+  .data-table tr:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-primary) !important;
+  }
+
+  .data-table td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: right !important;
+    padding: 0.75rem 0 !important;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05) !important;
+    font-size: 0.85rem !important;
+    color: var(--text-primary) !important;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none !important;
+    margin-top: 0.5rem !important;
+    padding-top: 0.875rem !important;
+    border-top: 1px solid var(--border-color) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* Show column label on the left using data-label attribute */
+  .data-table td::before {
+    content: attr(data-label) !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    font-size: 0.725rem !important;
+    letter-spacing: 0.05em !important;
+    text-align: left !important;
+    margin-right: 1.5rem !important;
+  }
+
+  /* Specific cell style alignment updates */
+  .data-table td .doctor-info-cell,
+  .data-table td .doc-assigned-cell,
+  .data-table td .contact-cell {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    text-align: right !important;
+    gap: 0.25rem !important;
+  }
+
+  .data-table td .doctor-info-cell {
+    flex-direction: row-reverse !important;
+    align-items: center !important;
+  }
+
+  .data-table td .actions-cell {
+    width: auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Doctor list specific layout padding adjustments */
+  .active-row {
+    border-left: 3px solid var(--accent-primary) !important;
   }
 }
 
@@ -1412,6 +1517,9 @@ select.filter-control {
   }
   
   .detail-panel {
+    left: 0 !important;
+    width: 100% !important;
+    border-left: none !important;
     padding: 1.5rem 1rem;
   }
 

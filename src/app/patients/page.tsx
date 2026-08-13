@@ -354,14 +354,14 @@ export default function PatientsPage() {
                   {patients.length > 0 ? (
                     patients.map((pat) => (
                       <tr key={pat._id}>
-                        <td style={{ fontWeight: 600 }}>{pat.name}</td>
-                        <td>
+                        <td data-label="Patient Name" style={{ fontWeight: 600 }}>{pat.name}</td>
+                        <td data-label="Age / Gender">
                           {pat.age} yrs / <span className="text-muted">{pat.gender}</span>
                         </td>
-                        <td>
+                        <td data-label="Condition">
                           <span className="badge badge-info">{pat.condition}</span>
                         </td>
-                        <td>
+                        <td data-label="Contact Info">
                           <div className="contact-cell">
                             <span className="contact-phone"><Phone size={12} /> {pat.phone}</span>
                             {pat.email && (
@@ -369,7 +369,7 @@ export default function PatientsPage() {
                             )}
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Assigned Doctor">
                           <div className="doc-assigned-cell">
                             <span className="doc-name">{pat.doctor?.name || 'Unassigned'}</span>
                             {pat.doctor?.specialization && (
@@ -377,10 +377,10 @@ export default function PatientsPage() {
                             )}
                           </div>
                         </td>
-                        <td className="text-muted">
+                        <td data-label="Admission Date" className="text-muted">
                           {new Date(pat.dateAdded).toLocaleDateString()}
                         </td>
-                        <td>
+                        <td data-label="Actions">
                           <div className="actions-cell">
                             <button
                               className="action-btn edit-btn"

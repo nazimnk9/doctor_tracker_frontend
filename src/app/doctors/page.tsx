@@ -399,7 +399,7 @@ export default function DoctorsPage() {
                             className={`doctor-row ${selectedDoctor?._id === doc._id ? 'active-row' : ''}`}
                             style={{ cursor: 'pointer' }}
                           >
-                            <td>
+                            <td data-label="Doctor Info">
                               <div className="doctor-info-cell">
                                 <div className="avatar">
                                   <Stethoscope size={18} />
@@ -410,8 +410,8 @@ export default function DoctorsPage() {
                                 </div>
                               </div>
                             </td>
-                            <td>{doc.hospital}</td>
-                            <td className="text-muted" style={{ fontSize: '0.8rem' }}>
+                            <td data-label="Hospital">{doc.hospital}</td>
+                            <td data-label="Registered" className="text-muted" style={{ fontSize: '0.8rem' }}>
                               {new Date(doc.createdAt).toLocaleDateString()}
                             </td>
                           </tr>
