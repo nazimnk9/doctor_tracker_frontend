@@ -147,10 +147,14 @@ graph TD
 *Reflowed layout stacking metric cards and vertical charting.*
 ![Dashboard Mobile](./screenshots/dashboard_mobile.png)
 
-#### 2. Doctors Page (Mobile)
-*Mobile-responsive grid displaying searchable cards with hamburger side menu.*
+#### 2. Doctors Directory - List View (Mobile)
+*Mobile-responsive list displaying doctor profiles as compact, clean cards.*
 ![Doctors Mobile](./screenshots/doctors_mobile.png)
 
-#### 3. Patients Page (Mobile)
-*Responsive data structure layout optimized for narrow mobile viewports.*
+#### 3. Doctors Directory - Details View (Mobile)
+*Full screen details layout showing contact card and patient loader after row selection.*
+![Doctors Mobile Details](./screenshots/doctors_mobile_detail.png)
+
+#### 4. Patients Directory (Mobile)
+*Optimized card-list view containing full patient metadata and edit/delete modal controls.*
 ![Patients Mobile](./screenshots/patients_mobile.png)
