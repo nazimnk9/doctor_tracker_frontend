@@ -68,6 +68,30 @@ button {
   cursor: pointer;
 }
 
+/* Custom Styled Select Fields */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1rem !important;
+  padding-right: 2.25rem !important;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #111827 !important; /* Fallback for native select lists */
+  color: #f3f4f6 !important;
+}
+
+select.form-input-sm {
+  background-position: right 0.5rem center !important;
+  background-size: 0.85rem !important;
+  padding-right: 1.75rem !important;
+}
+
 /* Layout Utilities */
 .app-container {
   display: flex;
