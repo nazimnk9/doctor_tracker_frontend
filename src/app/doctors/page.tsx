@@ -128,6 +128,7 @@ export default function DoctorsPage() {
         setError('Failed to fetch doctors list');
       }
     } catch (err) {
+      console.error('Error fetching doctors:', err);
       setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
@@ -160,12 +161,14 @@ export default function DoctorsPage() {
       fetchDoctors(1);
       setPage(1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, search, specialization, hospital, startDate, endDate]);
 
   useEffect(() => {
     if (token && selectedDoctor) {
       fetchDoctorPatients(selectedDoctor._id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDoctor, token]);
 
   const handlePageChange = (newPage: number) => {
@@ -198,6 +201,7 @@ export default function DoctorsPage() {
         alert(errData.message || 'Failed to create doctor');
       }
     } catch (err) {
+      console.error('Error adding doctor:', err);
       alert('Error connecting to the server');
     }
   };
@@ -230,6 +234,7 @@ export default function DoctorsPage() {
         alert(errData.message || 'Failed to add patient');
       }
     } catch (err) {
+      console.error('Error adding patient:', err);
       alert('Error connecting to the server');
     }
   };
@@ -253,6 +258,7 @@ export default function DoctorsPage() {
         alert('Failed to remove patient');
       }
     } catch (err) {
+      console.error('Error deleting patient:', err);
       alert('Error connecting to the server');
     }
   };

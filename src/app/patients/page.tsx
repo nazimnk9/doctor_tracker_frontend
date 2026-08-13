@@ -11,10 +11,8 @@ import {
   Trash2,
   Edit2,
   X,
-  HeartPulse,
   ChevronLeft,
   ChevronRight,
-  Filter,
 } from 'lucide-react';
 
 interface Doctor {
@@ -116,6 +114,7 @@ export default function PatientsPage() {
         setError('Failed to load patients catalog');
       }
     } catch (err) {
+      console.error('Error loading patients:', err);
       setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
@@ -127,6 +126,7 @@ export default function PatientsPage() {
       fetchPatients(1);
       setPage(1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, search, condition, gender, doctorId, startDate, endDate]);
 
   const handlePageChange = (newPage: number) => {
@@ -179,6 +179,7 @@ export default function PatientsPage() {
         alert(errData.message || 'Failed to update patient profile');
       }
     } catch (err) {
+      console.error('Error updating patient:', err);
       alert('Error connecting to the server');
     }
   };
@@ -202,6 +203,7 @@ export default function PatientsPage() {
         alert('Failed to delete patient record');
       }
     } catch (err) {
+      console.error('Error deleting patient:', err);
       alert('Error connecting to the server');
     }
   };
