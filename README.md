@@ -99,7 +99,7 @@ graph TD
 ### Data Flow Overview
 1. **User Authentication**: The client submits email/password credentials to `/api/auth/login`. Upon validation, the server returns a signed JSON Web Token (JWT). The client stores this token in `localStorage` and appends it to subsequent request headers.
 2. **Data Aggregation**: When the administrator loads the Dashboard, the client requests statistics from `/api/dashboard/stats`. The server executes high-performance aggregation pipelines on MongoDB (e.g. counting documents, sorting load-levels, grouping admissions by date) and responds with formatted JSON.
-3. **Doctor & Patient Management**: Listing views make calls to `/api/doctors` and `/api/patients` with query parameters. The controllers perform indexed searches, regex filtering, and paginated skipping, then return a slice of database records alongside overall pagination metadata.
+3. **Doctor & Patient Management**: Listing views support paginated search and filters. Administrators can register new doctors and patients, edit existing profiles (sending `PUT` requests to `/api/doctors/:id` or `/api/patients/:id`), and permanently delete records (sending `DELETE` requests). Deleting a doctor triggers a cascade deletion of their assigned patients to maintain database integrity.
 
 ---
 
