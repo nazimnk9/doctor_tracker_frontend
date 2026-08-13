@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserPlus,
+  Edit2,
 } from 'lucide-react';
 
 interface Doctor {
@@ -69,10 +70,20 @@ export default function DoctorsPage() {
 
   // Modal states
   const [showAddDocModal, setShowAddDocModal] = useState(false);
+  const [showEditDocModal, setShowEditDocModal] = useState(false);
   const [showAddPatientForm, setShowAddPatientForm] = useState(false);
 
   // New Doctor Form Data
   const [newDocData, setNewDocData] = useState({
+    name: '',
+    specialization: '',
+    hospital: '',
+    phone: '',
+    email: '',
+  });
+
+  // Edit Doctor Form Data
+  const [editDocData, setEditDocData] = useState({
     name: '',
     specialization: '',
     hospital: '',
@@ -198,6 +209,70 @@ export default function DoctorsPage() {
       } else {
         const errData = await res.json();
         alert(errData.message || 'Failed to create doctor');
+      }
+    } catch {
+      alert('Error connecting to the server');
+    }
+  };
+
+  // Open edit modal and populate data
+  const handleEditDoctorClick = (doctor: Doctor) => {
+    setEditDocData({
+      name: doctor.name,
+      specialization: doctor.specialization,
+      hospital: doctor.hospital,
+      phone: doctor.phone,
+      email: doctor.email,
+    });
+    setShowEditDocModal(true);
+  };
+
+  // Update Doctor handler
+  const handleUpdateDoctor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !selectedDoctor) return;
+    try {
+      const res = await fetch(`${API_URL}/doctors/${selectedDoctor._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editDocData),
+      });
+
+      if (res.ok) {
+        const updatedDoctor = await res.json();
+        setShowEditDocModal(false);
+        setSelectedDoctor(updatedDoctor);
+        fetchDoctors(page);
+      } else {
+        const errData = await res.json();
+        alert(errData.message || 'Failed to update doctor');
+      }
+    } catch {
+      alert('Error connecting to the server');
+    }
+  };
+
+  // Delete Doctor handler
+  const handleDeleteDoctor = async (doctorId: string) => {
+    if (!token) return;
+    if (!confirm('Are you sure you want to permanently delete this doctor and all their assigned patients?')) return;
+
+    try {
+      const res = await fetch(`${API_URL}/doctors/${doctorId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setSelectedDoctor(null);
+        fetchDoctors(page);
+      } else {
+        alert('Failed to delete doctor');
       }
     } catch {
       alert('Error connecting to the server');
@@ -470,6 +545,24 @@ export default function DoctorsPage() {
                   </button>
                   <h2>{selectedDoctor.name}</h2>
                   <span className="badge badge-info">{selectedDoctor.specialization}</span>
+                  <div className="doc-action-buttons" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px' }}>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleEditDoctorClick(selectedDoctor)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Edit2 size={14} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDeleteDoctor(selectedDoctor._id)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="detail-contact-list">
@@ -679,6 +772,82 @@ export default function DoctorsPage() {
                   </button>
                   <button type="submit" className="btn btn-primary">
                     Create Doctor
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Edit Doctor */}
+        {showEditDocModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>Edit Doctor Details</h3>
+                <button className="close-panel-btn" onClick={() => setShowEditDocModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateDoctor}>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label">Doctor Name</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editDocData.name}
+                      onChange={(e) => setEditDocData({ ...editDocData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Specialization</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editDocData.specialization}
+                      onChange={(e) => setEditDocData({ ...editDocData, specialization: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Hospital</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editDocData.hospital}
+                      onChange={(e) => setEditDocData({ ...editDocData, hospital: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Phone Number</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editDocData.phone}
+                      onChange={(e) => setEditDocData({ ...editDocData, phone: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      value={editDocData.email}
+                      onChange={(e) => setEditDocData({ ...editDocData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditDocModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Save Changes
                   </button>
                 </div>
               </form>
