@@ -27,6 +27,7 @@ import {
   validateSelect,
   validateEmail,
 } from '../../utils/validation';
+import { useModal } from '../../context/ModalContext';
 
 interface Doctor {
   _id: string;
@@ -51,6 +52,7 @@ interface Patient {
 
 export default function DoctorsPage() {
   const { token, loading: authLoading } = useAuth();
+  const { showAlert, showConfirm } = useModal();
   
   // Doctor listing states
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -334,10 +336,10 @@ export default function DoctorsPage() {
         fetchDoctors(page);
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Failed to create doctor');
+        showAlert('Error', errData.message || 'Failed to create doctor');
       }
     } catch {
-      alert('Error connecting to the server');
+      showAlert('Error', 'Error connecting to the server');
     }
   };
 
@@ -395,35 +397,40 @@ export default function DoctorsPage() {
         fetchDoctors(page);
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Failed to update doctor');
+        showAlert('Error', errData.message || 'Failed to update doctor');
       }
     } catch {
-      alert('Error connecting to the server');
+      showAlert('Error', 'Error connecting to the server');
     }
   };
 
   // Delete Doctor handler
   const handleDeleteDoctor = async (doctorId: string) => {
     if (!token) return;
-    if (!confirm('Are you sure you want to permanently delete this doctor and all their assigned patients?')) return;
 
-    try {
-      const res = await fetch(`${API_URL}/doctors/${doctorId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    showConfirm(
+      'Confirm Delete',
+      'Are you sure you want to permanently delete this doctor and all their assigned patients?',
+      async () => {
+        try {
+          const res = await fetch(`${API_URL}/doctors/${doctorId}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-      if (res.ok) {
-        setSelectedDoctor(null);
-        fetchDoctors(page);
-      } else {
-        alert('Failed to delete doctor');
+          if (res.ok) {
+            setSelectedDoctor(null);
+            fetchDoctors(page);
+          } else {
+            showAlert('Error', 'Failed to delete doctor');
+          }
+        } catch {
+          showAlert('Error', 'Error connecting to the server');
+        }
       }
-    } catch {
-      alert('Error connecting to the server');
-    }
+    );
   };
 
   // Create patient under selected doctor handler
@@ -472,34 +479,39 @@ export default function DoctorsPage() {
         fetchDoctorPatients(selectedDoctor._id);
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Failed to add patient');
+        showAlert('Error', errData.message || 'Failed to add patient');
       }
     } catch {
-      alert('Error connecting to the server');
+      showAlert('Error', 'Error connecting to the server');
     }
   };
 
   // Delete patient from doctor list handler
   const handleDeletePatient = async (patientId: string) => {
     if (!token || !selectedDoctor) return;
-    if (!confirm('Are you sure you want to delete this patient record?')) return;
 
-    try {
-      const res = await fetch(`${API_URL}/doctors/${selectedDoctor._id}/patients/${patientId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    showConfirm(
+      'Confirm Delete',
+      'Are you sure you want to delete this patient record?',
+      async () => {
+        try {
+          const res = await fetch(`${API_URL}/doctors/${selectedDoctor._id}/patients/${patientId}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-      if (res.ok) {
-        fetchDoctorPatients(selectedDoctor._id);
-      } else {
-        alert('Failed to remove patient');
+          if (res.ok) {
+            fetchDoctorPatients(selectedDoctor._id);
+          } else {
+            showAlert('Error', 'Failed to remove patient');
+          }
+        } catch {
+          showAlert('Error', 'Error connecting to the server');
+        }
       }
-    } catch {
-      alert('Error connecting to the server');
-    }
+    );
   };
 
   if (authLoading) {

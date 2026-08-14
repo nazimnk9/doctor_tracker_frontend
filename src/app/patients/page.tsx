@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { validateRequired, validateAge, validatePhone, validateOptionalEmail, validateSelect } from '../../utils/validation';
+import { useModal } from '../../context/ModalContext';
 
 interface Doctor {
   _id: string;
@@ -40,6 +41,7 @@ interface Patient {
 
 export default function PatientsPage() {
   const { token, loading: authLoading } = useAuth();
+  const { showAlert, showConfirm } = useModal();
 
   // Patient listing states
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -229,34 +231,39 @@ export default function PatientsPage() {
         fetchPatients(page);
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Failed to update patient profile');
+        showAlert('Error', errData.message || 'Failed to update patient profile');
       }
     } catch {
-      alert('Error connecting to the server');
+      showAlert('Error', 'Error connecting to the server');
     }
   };
 
   // Delete patient handler
   const handleDeletePatient = async (id: string) => {
     if (!token) return;
-    if (!confirm('Are you sure you want to permanently delete this patient record?')) return;
 
-    try {
-      const res = await fetch(`${API_URL}/patients/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    showConfirm(
+      'Confirm Delete',
+      'Are you sure you want to permanently delete this patient record?',
+      async () => {
+        try {
+          const res = await fetch(`${API_URL}/patients/${id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-      if (res.ok) {
-        fetchPatients(page);
-      } else {
-        alert('Failed to delete patient record');
+          if (res.ok) {
+            fetchPatients(page);
+          } else {
+            showAlert('Error', 'Failed to delete patient record');
+          }
+        } catch {
+          showAlert('Error', 'Error connecting to the server');
+        }
       }
-    } catch {
-      alert('Error connecting to the server');
-    }
+    );
   };
 
   if (authLoading) {
