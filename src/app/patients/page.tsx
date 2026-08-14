@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { validateRequired, validateAge, validatePhone, validateOptionalEmail, validateSelect } from '../../utils/validation';
 
 interface Doctor {
   _id: string;
@@ -74,6 +75,35 @@ export default function PatientsPage() {
     email: '',
     doctor: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleFieldChange = (field: string, value: string, validator: (v: string) => string | null) => {
+    setEditFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      const err = validator(value);
+      setErrors((prevErr) => {
+        const next = { ...prevErr };
+        if (!err) delete next[field];
+        else next[field] = err;
+        return next;
+      });
+    }
+  };
+
+  const handleFieldBlur = (field: string, value: string, validator: (v: string) => string | null) => {
+    const err = validator(value);
+    setErrors((prevErr) => {
+      const next = { ...prevErr };
+      if (err) next[field] = err;
+      else delete next[field];
+      return next;
+    });
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setErrors({});
+  };
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -147,6 +177,7 @@ export default function PatientsPage() {
       email: patient.email || '',
       doctor: patient.doctor?._id || '',
     });
+    setErrors({});
     setShowEditModal(true);
   };
 
@@ -154,6 +185,29 @@ export default function PatientsPage() {
   const handleUpdatePatient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !selectedPatient) return;
+
+    const valErrors: Record<string, string> = {};
+    const nameErr = validateRequired(editFormData.name);
+    const ageErr = validateAge(editFormData.age);
+    const genderErr = validateSelect(editFormData.gender);
+    const conditionErr = validateRequired(editFormData.condition);
+    const phoneErr = validatePhone(editFormData.phone);
+    const emailErr = validateOptionalEmail(editFormData.email);
+    const docErr = validateSelect(editFormData.doctor);
+
+    if (nameErr) valErrors.name = nameErr;
+    if (ageErr) valErrors.age = ageErr;
+    if (genderErr) valErrors.gender = genderErr;
+    if (conditionErr) valErrors.condition = conditionErr;
+    if (phoneErr) valErrors.phone = phoneErr;
+    if (emailErr) valErrors.email = emailErr;
+    if (docErr) valErrors.doctor = docErr;
+
+    setErrors(valErrors);
+
+    if (Object.keys(valErrors).length > 0) {
+      return;
+    }
 
     try {
       const payload = {
@@ -171,7 +225,7 @@ export default function PatientsPage() {
       });
 
       if (res.ok) {
-        setShowEditModal(false);
+        closeEditModal();
         fetchPatients(page);
       } else {
         const errData = await res.json();
@@ -443,21 +497,22 @@ export default function PatientsPage() {
             <div className="modal-content">
               <div className="modal-header">
                 <h3>Edit Patient Profile</h3>
-                <button className="close-panel-btn" onClick={() => setShowEditModal(false)}>
+                <button className="close-panel-btn" onClick={closeEditModal}>
                   <X size={18} />
                 </button>
               </div>
-              <form onSubmit={handleUpdatePatient}>
+              <form onSubmit={handleUpdatePatient} noValidate>
                 <div className="modal-body">
                   <div className="form-group">
                     <label className="form-label">Patient Name</label>
                     <input
                       type="text"
-                      className="form-input"
+                      className={`form-input ${errors.name ? 'input-error' : ''}`}
                       value={editFormData.name}
-                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                      required
+                      onChange={(e) => handleFieldChange('name', e.target.value, validateRequired)}
+                      onBlur={(e) => handleFieldBlur('name', e.target.value, validateRequired)}
                     />
+                    {errors.name && <span className="error-message">{errors.name}</span>}
                   </div>
 
                   <div className="form-row">
@@ -465,23 +520,27 @@ export default function PatientsPage() {
                       <label className="form-label">Age</label>
                       <input
                         type="number"
-                        className="form-input"
+                        className={`form-input ${errors.age ? 'input-error' : ''}`}
                         value={editFormData.age}
-                        onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
-                        required
+                        onChange={(e) => handleFieldChange('age', e.target.value, validateAge)}
+                        onBlur={(e) => handleFieldBlur('age', e.target.value, validateAge)}
                       />
+                      {errors.age && <span className="error-message">{errors.age}</span>}
                     </div>
                     <div className="form-group flex-1">
                       <label className="form-label">Gender</label>
                       <select
-                        className="form-input"
+                        className={`form-input ${errors.gender ? 'input-error' : ''}`}
                         value={editFormData.gender}
-                        onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                        onChange={(e) => handleFieldChange('gender', e.target.value, validateSelect)}
+                        onBlur={(e) => handleFieldBlur('gender', e.target.value, validateSelect)}
                       >
+                        <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
+                      {errors.gender && <span className="error-message">{errors.gender}</span>}
                     </div>
                   </div>
 
@@ -489,11 +548,12 @@ export default function PatientsPage() {
                     <label className="form-label">Medical Condition</label>
                     <input
                       type="text"
-                      className="form-input"
+                      className={`form-input ${errors.condition ? 'input-error' : ''}`}
                       value={editFormData.condition}
-                      onChange={(e) => setEditFormData({ ...editFormData, condition: e.target.value })}
-                      required
+                      onChange={(e) => handleFieldChange('condition', e.target.value, validateRequired)}
+                      onBlur={(e) => handleFieldBlur('condition', e.target.value, validateRequired)}
                     />
+                    {errors.condition && <span className="error-message">{errors.condition}</span>}
                   </div>
 
                   <div className="form-row">
@@ -501,41 +561,46 @@ export default function PatientsPage() {
                       <label className="form-label">Phone Number</label>
                       <input
                         type="text"
-                        className="form-input"
+                        className={`form-input ${errors.phone ? 'input-error' : ''}`}
                         value={editFormData.phone}
-                        onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                        required
+                        onChange={(e) => handleFieldChange('phone', e.target.value, validatePhone)}
+                        onBlur={(e) => handleFieldBlur('phone', e.target.value, validatePhone)}
                       />
+                      {errors.phone && <span className="error-message">{errors.phone}</span>}
                     </div>
                     <div className="form-group flex-1">
                       <label className="form-label">Email Address</label>
                       <input
                         type="email"
-                        className="form-input"
+                        className={`form-input ${errors.email ? 'input-error' : ''}`}
                         value={editFormData.email}
-                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                        onChange={(e) => handleFieldChange('email', e.target.value, validateOptionalEmail)}
+                        onBlur={(e) => handleFieldBlur('email', e.target.value, validateOptionalEmail)}
                       />
+                      {errors.email && <span className="error-message">{errors.email}</span>}
                     </div>
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">Assigned Doctor</label>
                     <select
-                      className="form-input"
+                      className={`form-input ${errors.doctor ? 'input-error' : ''}`}
                       value={editFormData.doctor}
-                      onChange={(e) => setEditFormData({ ...editFormData, doctor: e.target.value })}
-                      required
+                      onChange={(e) => handleFieldChange('doctor', e.target.value, validateSelect)}
+                      onBlur={(e) => handleFieldBlur('doctor', e.target.value, validateSelect)}
                     >
+                      <option value="">Select Doctor</option>
                       {filterOptions.doctors.map((doc) => (
                         <option key={doc._id} value={doc._id}>
                           {doc.name}
                         </option>
                       ))}
                     </select>
+                    {errors.doctor && <span className="error-message">{errors.doctor}</span>}
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                  <button type="button" className="btn btn-secondary" onClick={closeEditModal}>
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary">

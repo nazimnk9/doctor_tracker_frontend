@@ -3,20 +3,76 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Activity, ShieldAlert, KeyRound, Mail } from 'lucide-react';
+import { validateEmail, validateRequired } from '../../utils/validation';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    if (errors.email) {
+      const err = validateEmail(val);
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (!err) delete next.email;
+        else next.email = err;
+        return next;
+      });
+    }
+  };
+
+  const handlePasswordChange = (val: string) => {
+    setPassword(val);
+    if (errors.password) {
+      const err = validateRequired(val);
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (!err) delete next.password;
+        else next.password = err;
+        return next;
+      });
+    }
+  };
+
+  const handleEmailBlur = () => {
+    const err = validateEmail(email);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (err) next.email = err;
+      else delete next.email;
+      return next;
+    });
+  };
+
+  const handlePasswordBlur = () => {
+    const err = validateRequired(password);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (err) next.password = err;
+      else delete next.password;
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!email || !password) {
-      setError('Please enter both email and password');
+    const emailErr = validateEmail(email);
+    const passErr = validateRequired(password);
+
+    const valErrors: Record<string, string> = {};
+    if (emailErr) valErrors.email = emailErr;
+    if (passErr) valErrors.password = passErr;
+
+    setErrors(valErrors);
+
+    if (Object.keys(valErrors).length > 0) {
       return;
     }
 
@@ -47,7 +103,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className="login-form" noValidate>
           <div className="form-group">
             <label className="form-label" htmlFor="email">
               Email Address
@@ -57,14 +113,15 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
-                className="form-input icon-padded"
+                className={`form-input icon-padded ${errors.email ? 'input-error' : ''}`}
                 placeholder="admin@doctortracker.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                onBlur={handleEmailBlur}
                 disabled={loading}
-                required
               />
             </div>
+            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -76,15 +133,17 @@ export default function LoginPage() {
               <input
                 id="password"
                 type="password"
-                className="form-input icon-padded"
+                className={`form-input icon-padded ${errors.password ? 'input-error' : ''}`}
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                onBlur={handlePasswordBlur}
                 disabled={loading}
-                required
               />
             </div>
+            {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
+
 
           <button
             type="submit"

@@ -1091,6 +1091,7 @@ select.filter-control {
   gap: 0.75rem;
   font-size: 0.875rem;
   color: var(--text-secondary);
+  min-width: 0;
 }
 
 .text-email {
@@ -1098,6 +1099,7 @@ select.filter-control {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  min-width: 0;
 }
 
 .patients-section {
@@ -1264,6 +1266,9 @@ select.filter-control {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .doc-assigned-cell {
@@ -1498,12 +1503,13 @@ select.filter-control {
   .data-table td {
     display: flex !important;
     justify-content: space-between !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     text-align: right !important;
     padding: 0.75rem 0 !important;
     border-bottom: 1px dashed rgba(255, 255, 255, 0.05) !important;
     font-size: 0.85rem !important;
     color: var(--text-primary) !important;
+    min-width: 0 !important;
   }
 
   .data-table td:last-child {
@@ -1595,4 +1601,46 @@ select.filter-control {
   .modal-header, .modal-body, .modal-footer {
     padding: 1rem;
   }
+
+  /* Stack label and value vertically on very small screens */
+  .data-table td {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 0.25rem !important;
+  }
+  
+  .data-table td::before {
+    margin-right: 0 !important;
+    margin-bottom: 0.25rem !important;
+    text-align: left !important;
+  }
+
+  .data-table td .doctor-info-cell,
+  .data-table td .doc-assigned-cell,
+  .data-table td .contact-cell {
+    align-items: flex-start !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+
+  .data-table td .actions-cell {
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
 }
+
+/* Form Validation Styles */
+.form-input.input-error {
+  border-color: var(--accent-danger) !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+
+.error-message {
+  color: var(--accent-danger);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: block;
+}
+
